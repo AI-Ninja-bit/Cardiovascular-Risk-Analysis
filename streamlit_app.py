@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 # Load the trained model (replace 'trained_model.pkl' with your model file)
 import joblib
-model = joblib.load("trained_model.pkl")
+model = joblib.load("models.pkl")
 
 # Feature names used in the model
 FEATURES = [
