@@ -3,7 +3,6 @@ import numpy as np
 import joblib
 
 models = joblib.load("models.pkl")
-scaler = joblib.load("scaler.pkl")
 
 FEATURES = [
     'age', 'education', 'sex', 'is_smoking', 'cigsPerDay', 'BPMeds',
