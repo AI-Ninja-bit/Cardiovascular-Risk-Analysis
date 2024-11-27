@@ -1,82 +1,62 @@
 import streamlit as st
+import pandas as pd
 import numpy as np
-import joblib
-from sklearn.preprocessing import StandardScaler
-import xgboost as xgb
-import matplotlib.pyplot as plt
-import seaborn as sns
+import pickle
 
+# Load the trained model
 xgb_model = joblib.load("xgb_model.pkl")
-scaler = StandardScaler()
 
-FEATURES = [
-    'age', 'education', 'sex', 'is_smoking', 'cigsPerDay', 'BPMeds',
-    'prevalentStroke', 'prevalentHyp', 'diabetes', 'totChol', 'sysBP',
-    'diaBP', 'BMI', 'heartRate', 'glucose'
-]
+# Define the Streamlit app
+st.title("Framingham Heart Study Disease Prediction")
+st.write("This app predicts the likelihood of developing heart disease based on the Framingham Heart Study dataset.")
 
-def calculate_risk_score(input_data):
-    scaled_data = scaler.fit_transform([input_data])
-    risk_score = xgb_model.predict_proba(scaled_data)[0][1]
-    return risk_score
+# Input fields for user
+st.header("Enter Patient Details")
 
-def generate_recommendations(risk_score):
-    if risk_score < 0.3:
-        return "Maintain a healthy lifestyle with regular exercise and a balanced diet."
-    elif risk_score < 0.7:
-        return "Consider regular check-ups and monitor your cholesterol and blood pressure."
+age = st.number_input("Age (years)", min_value=20, max_value=120, value=50)
+sex = st.selectbox("Sex", options=["Male", "Female"])
+cigs_per_day = st.number_input("Cigarettes per day", min_value=0, max_value=100, value=0)
+bp_meds = st.selectbox("On Blood Pressure Medication?", options=["No", "Yes"])
+prevalent_stroke = st.selectbox("History of Stroke?", options=["No", "Yes"])
+prevalent_hyp = st.selectbox("Hypertension?", options=["No", "Yes"])
+diabetes = st.selectbox("Diabetes?", options=["No", "Yes"])
+tot_chol = st.number_input("Total Cholesterol (mg/dL)", min_value=100, max_value=600, value=200)
+sys_bp = st.number_input("Systolic Blood Pressure (mmHg)", min_value=80, max_value=300, value=120)
+dia_bp = st.number_input("Diastolic Blood Pressure (mmHg)", min_value=50, max_value=200, value=80)
+bmi = st.number_input("Body Mass Index (kg/m²)", min_value=10.0, max_value=60.0, value=25.0)
+heart_rate = st.number_input("Heart Rate (bpm)", min_value=40, max_value=200, value=70)
+glucose = st.number_input("Glucose Level (mg/dL)", min_value=50, max_value=300, value=100)
+
+# Map categorical inputs to numerical values
+sex = 1 if sex == "Male" else 0
+bp_meds = 1 if bp_meds == "Yes" else 0
+prevalent_stroke = 1 if prevalent_stroke == "Yes" else 0
+prevalent_hyp = 1 if prevalent_hyp == "Yes" else 0
+diabetes = 1 if diabetes == "Yes" else 0
+
+# Prepare the input data for prediction
+input_data = pd.DataFrame({
+    'age': [age],
+    'sex': [sex],
+    'cigsPerDay': [cigs_per_day],
+    'BPMeds': [bp_meds],
+    'prevalentStroke': [prevalent_stroke],
+    'prevalentHyp': [prevalent_hyp],
+    'diabetes': [diabetes],
+    'totChol': [tot_chol],
+    'sysBP': [sys_bp],
+    'diaBP': [dia_bp],
+    'BMI': [bmi],
+    'heartRate': [heart_rate],
+    'glucose': [glucose]
+})
+
+# Predict and display results
+if st.button("Predict"):
+    prediction = model.predict(input_data)
+    probability = model.predict_proba(input_data)[0][1]
+
+    if prediction[0] == 1:
+        st.error(f"The model predicts a high risk of heart disease. (Probability: {probability:.2f})")
     else:
-        return "High risk detected! Consult a healthcare provider immediately for a detailed assessment."
-
-st.set_page_config(page_title="CVD Risk Predictor", page_icon="❤️", layout="wide")
-st.title("Cardiovascular Disease Risk Predictor")
-st.subheader("Input your health details to assess your risk and receive personalized recommendations.")
-
-st.image("https://www.example.com/logo.png", width=150)
-
-col1, col2 = st.columns([2, 3])
-
-with col1:
-    age = st.slider("Age", min_value=0, max_value=120, value=30, step=1)
-    education = st.selectbox("Education Level (1=Less, 4=Graduate)", options=[1, 2, 3, 4])
-    sex = st.selectbox("Sex", options=[0, 1], format_func=lambda x: "Male" if x == 1 else "Female")
-    is_smoking = st.selectbox("Smoking Status", options=[0, 1], format_func=lambda x: "Non-Smoker" if x == 0 else "Smoker")
-    cigsPerDay = st.slider("Cigarettes Per Day", min_value=0, max_value=100, value=0, step=1)
-    BPMeds = st.selectbox("Blood Pressure Medication", options=[0, 1])
-    prevalentStroke = st.selectbox("Prevalent Stroke", options=[0, 1])
-    prevalentHyp = st.selectbox("Prevalent Hypertension", options=[0, 1])
-
-with col2:
-    diabetes = st.selectbox("Diabetes", options=[0, 1])
-    totChol = st.slider("Total Cholesterol (mg/dL)", min_value=0, max_value=400, value=200, step=1)
-    sysBP = st.slider("Systolic Blood Pressure (mmHg)", min_value=50, max_value=200, value=120, step=1)
-    diaBP = st.slider("Diastolic Blood Pressure (mmHg)", min_value=30, max_value=150, value=80, step=1)
-    BMI = st.slider("Body Mass Index (BMI)", min_value=10.0, max_value=50.0, value=25.0, step=0.1)
-    heartRate = st.slider("Heart Rate (beats per minute)", min_value=30, max_value=200, value=70, step=1)
-    glucose = st.slider("Glucose Level (mg/dL)", min_value=50, max_value=250, value=100, step=1)
-
-if st.button("Calculate Risk", key="calculate"):
-    input_data = [
-        age, education, sex, is_smoking, cigsPerDay, BPMeds, prevalentStroke,
-        prevalentHyp, diabetes, totChol, sysBP, diaBP, BMI, heartRate, glucose
-    ]
-    risk_score = calculate_risk_score(input_data)
-    if risk_score is not None and 0 <= risk_score <= 1:
-        recommendation = generate_recommendations(risk_score)
-
-        st.subheader("Risk Score:")
-        st.markdown(f"<h3 style='color:{'red' if risk_score > 0.7 else 'green' if risk_score < 0.3 else 'orange'};'>{risk_score:.2f}</h3>", unsafe_allow_html=True)
-
-        st.progress(min(max(risk_score * 100, 0), 100))
-
-        st.subheader("Personalized Recommendation:")
-        st.write(recommendation)
-
-        fig, ax = plt.subplots()
-        sns.barplot(x=['Risk'], y=[risk_score], palette='coolwarm', ax=ax)
-        ax.set_ylim(0, 1)
-        st.pyplot(fig)
-    else:
-        st.error("Error: Risk score could not be calculated. Please try again.")
-
-st.write("Note: This prediction is not a substitute for professional medical advice.")
+        st.success(f"The model predicts a low risk of heart disease. (Probability: {probability:.2f})")
