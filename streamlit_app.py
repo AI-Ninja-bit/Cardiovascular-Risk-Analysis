@@ -4,11 +4,9 @@ import numpy as np
 import pickle
 
 # Load the trained model
-
-with open('xgb_model.pkl', 'rb') as file:
+model_path = '/mnt/data/xgb_model.pkl'
+with open(model_path, 'rb') as file:
     model = pickle.load(file)
-print(model)
-
 
 # Define the Streamlit app
 st.title("Framingham Heart Study Disease Prediction")
@@ -19,6 +17,8 @@ st.header("Enter Patient Details")
 
 age = st.number_input("Age (years)", min_value=20, max_value=120, value=50)
 sex = st.selectbox("Sex", options=["Male", "Female"])
+education = st.selectbox("Education Level", options=["High School", "Undergraduate", "Postgraduate", "Other"], index=1)
+is_smoking = st.selectbox("Currently Smoking?", options=["No", "Yes"])
 cigs_per_day = st.number_input("Cigarettes per day", min_value=0, max_value=100, value=0)
 bp_meds = st.selectbox("On Blood Pressure Medication?", options=["No", "Yes"])
 prevalent_stroke = st.selectbox("History of Stroke?", options=["No", "Yes"])
@@ -33,15 +33,22 @@ glucose = st.number_input("Glucose Level (mg/dL)", min_value=50, max_value=300, 
 
 # Map categorical inputs to numerical values
 sex = 1 if sex == "Male" else 0
+is_smoking = 1 if is_smoking == "Yes" else 0
 bp_meds = 1 if bp_meds == "Yes" else 0
 prevalent_stroke = 1 if prevalent_stroke == "Yes" else 0
 prevalent_hyp = 1 if prevalent_hyp == "Yes" else 0
 diabetes = 1 if diabetes == "Yes" else 0
 
+# Map education level to numeric
+education_mapping = {"High School": 1, "Undergraduate": 2, "Postgraduate": 3, "Other": 4}
+education = education_mapping[education]
+
 # Prepare the input data for prediction
 input_data = pd.DataFrame({
     'age': [age],
+    'education': [education],
     'sex': [sex],
+    'is_smoking': [is_smoking],
     'cigsPerDay': [cigs_per_day],
     'BPMeds': [bp_meds],
     'prevalentStroke': [prevalent_stroke],
