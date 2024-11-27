@@ -4,7 +4,11 @@ import numpy as np
 import pickle
 
 # Load the trained model
-xgb_model = joblib.load("xgb_model.pkl")
+
+with open('xgb_model.pkl', 'rb') as file:
+    model = pickle.load(file)
+print(model)
+
 
 # Define the Streamlit app
 st.title("Framingham Heart Study Disease Prediction")
