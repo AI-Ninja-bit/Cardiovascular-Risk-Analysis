@@ -20,7 +20,9 @@ st.write("This app predicts the likelihood of developing heart disease based on 
 st.header("Enter Patient Details")
 
 age = st.number_input("Age (years)", min_value=20, max_value=120, value=50)
+education = st.selectbox("Education Level", options=["High School", "Undergraduate", "Graduate", "Postgraduate"])
 sex = st.selectbox("Sex", options=["Male", "Female"])
+is_smoking = st.selectbox("Currently Smoking?", options=["No", "Yes"])
 cigs_per_day = st.number_input("Cigarettes per day", min_value=0, max_value=100, value=0)
 bp_meds = st.selectbox("On Blood Pressure Medication?", options=["No", "Yes"])
 prevalent_stroke = st.selectbox("History of Stroke?", options=["No", "Yes"])
@@ -34,7 +36,11 @@ heart_rate = st.number_input("Heart Rate (bpm)", min_value=40, max_value=200, va
 glucose = st.number_input("Glucose Level (mg/dL)", min_value=50, max_value=300, value=100)
 
 # Map categorical inputs to numerical values
+education_mapping = {"High School": 1, "Undergraduate": 2, "Graduate": 3, "Postgraduate": 4}
+education = education_mapping[education]
+
 sex = 1 if sex == "Male" else 0
+is_smoking = 1 if is_smoking == "Yes" else 0
 bp_meds = 1 if bp_meds == "Yes" else 0
 prevalent_stroke = 1 if prevalent_stroke == "Yes" else 0
 prevalent_hyp = 1 if prevalent_hyp == "Yes" else 0
@@ -43,7 +49,9 @@ diabetes = 1 if diabetes == "Yes" else 0
 # Prepare the input data for prediction
 input_data = pd.DataFrame({
     'age': [age],
+    'education': [education],
     'sex': [sex],
+    'is_smoking': [is_smoking],
     'cigsPerDay': [cigs_per_day],
     'BPMeds': [bp_meds],
     'prevalentStroke': [prevalent_stroke],
