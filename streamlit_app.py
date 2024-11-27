@@ -61,19 +61,22 @@ if st.button("Calculate Risk", key="calculate"):
         prevalentHyp, diabetes, totChol, sysBP, diaBP, BMI, heartRate, glucose
     ]
     risk_score = calculate_risk_score(input_data)
-    recommendation = generate_recommendations(risk_score)
-    
-    st.subheader("Risk Score:")
-    st.markdown(f"<h3 style='color:{'red' if risk_score > 0.7 else 'green' if risk_score < 0.3 else 'orange'};'>{risk_score:.2f}</h3>", unsafe_allow_html=True)
-    
-    st.progress(risk_score * 100)
+    if risk_score is not None:
+        recommendation = generate_recommendations(risk_score)
 
-    st.subheader("Personalized Recommendation:")
-    st.write(recommendation)
+        st.subheader("Risk Score:")
+        st.markdown(f"<h3 style='color:{'red' if risk_score > 0.7 else 'green' if risk_score < 0.3 else 'orange'};'>{risk_score:.2f}</h3>", unsafe_allow_html=True)
 
-    fig, ax = plt.subplots()
-    sns.barplot(x=['Risk'], y=[risk_score], palette='coolwarm', ax=ax)
-    ax.set_ylim(0, 1)
-    st.pyplot(fig)
+        st.progress(risk_score * 100)
+
+        st.subheader("Personalized Recommendation:")
+        st.write(recommendation)
+
+        fig, ax = plt.subplots()
+        sns.barplot(x=['Risk'], y=[risk_score], palette='coolwarm', ax=ax)
+        ax.set_ylim(0, 1)
+        st.pyplot(fig)
+    else:
+        st.error("Error: Risk score could not be calculated. Please try again.")
 
 st.write("Note: This prediction is not a substitute for professional medical advice.")
