@@ -66,7 +66,7 @@ if st.button("Calculate Risk", key="calculate"):
     st.subheader("Risk Score:")
     st.markdown(f"<h3 style='color:{'red' if risk_score > 0.7 else 'green' if risk_score < 0.3 else 'orange'};'>{risk_score:.2f}</h3>", unsafe_allow_html=True)
     
-    st.progress(risk_score)
+    st.progress(risk_score * 100)
 
     st.subheader("Personalized Recommendation:")
     st.write(recommendation)
