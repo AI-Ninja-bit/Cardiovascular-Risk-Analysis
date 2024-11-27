@@ -1,12 +1,16 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import pickle
+import joblib
+import os
 
 # Load the trained model
-model_path = '/mnt/data/xgb_model.pkl'
-with open(model_path, 'rb') as file:
-    model = pickle.load(file)
+try:
+    xgb_model = joblib.load("xgb_model.pkl")
+    st.write("Model loaded successfully.")
+except FileNotFoundError:
+    st.error("Model file not found in the current directory. Please ensure 'xgb_model.pkl' is present.")
+    st.stop()
 
 # Define the Streamlit app
 st.title("Framingham Heart Study Disease Prediction")
@@ -55,10 +59,8 @@ input_data = pd.DataFrame({
 
 # Predict and display results
 if st.button("Predict"):
-    prediction = model.predict(input_data)
-    probability = model.predict_proba(input_data)[0][1]
+    prediction = xgb_model.predict(input_data)
+    probability = xgb_model.predict_proba(input_data)[0][1]
 
     if prediction[0] == 1:
-        st.error(f"The model predicts a high risk of heart disease. (Probability: {probability:.2f})")
-    else:
-        st.success(f"The model predicts a low risk of heart disease. (Probability: {probability:.2f})")
+        st.error(f"The model predicts a high r
