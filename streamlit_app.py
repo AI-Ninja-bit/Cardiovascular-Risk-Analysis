@@ -63,4 +63,6 @@ if st.button("Predict"):
     probability = xgb_model.predict_proba(input_data)[0][1]
 
     if prediction[0] == 1:
-        st.error(f"The model predicts a high r
+        st.error(f"The model predicts a high risk of heart disease. (Probability: {probability:.2f})")
+    else:
+        st.success(f"The model predicts a low risk of heart disease. (Probability: {probability:.2f})")
