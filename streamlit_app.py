@@ -1,8 +1,13 @@
 import streamlit as st
 import numpy as np
 import joblib
+from sklearn.preprocessing import StandardScaler
 
+# Load models from the file
 models = joblib.load("models.pkl")
+
+# Initialize a scaler (StandardScaler) directly in the code
+scaler = StandardScaler()
 
 FEATURES = [
     'age', 'education', 'sex', 'is_smoking', 'cigsPerDay', 'BPMeds',
@@ -10,12 +15,13 @@ FEATURES = [
     'diaBP', 'BMI', 'heartRate', 'glucose'
 ]
 
+# Function to select the best model based on risk score
 def select_best_model(input_data):
     best_model_name = None
     best_risk_score = -1
     best_model = None
+    scaled_data = scaler.fit_transform([input_data])  # Scale the input data here
     for model_name, model in models.items():
-        scaled_data = scaler.transform([input_data])
         risk_score = model.predict_proba(scaled_data)[0][1]
         if risk_score > best_risk_score:
             best_risk_score = risk_score
@@ -23,6 +29,7 @@ def select_best_model(input_data):
             best_model = model
     return best_model_name, best_model, best_risk_score
 
+# Function to generate recommendations based on risk score
 def generate_recommendations(risk_score):
     if risk_score < 0.3:
         return "Maintain a healthy lifestyle with regular exercise and a balanced diet."
@@ -31,9 +38,11 @@ def generate_recommendations(risk_score):
     else:
         return "High risk detected! Consult a healthcare provider immediately for a detailed assessment."
 
+# Streamlit App Design
 st.title("Cardiovascular Disease Risk Predictor")
 st.write("Input your health details to assess your risk and receive personalized recommendations.")
 
+# Input fields for health data
 age = st.number_input("Age", min_value=0, max_value=120, value=30, step=1)
 education = st.selectbox("Education Level (1=Less, 4=Graduate)", options=[1, 2, 3, 4])
 sex = st.selectbox("Sex", options=[0, 1], format_func=lambda x: "Male" if x == 1 else "Female")
@@ -50,6 +59,7 @@ BMI = st.number_input("Body Mass Index (BMI)", min_value=0.0, value=25.0, step=0
 heartRate = st.number_input("Heart Rate (beats per minute)", min_value=0, value=70, step=1)
 glucose = st.number_input("Glucose Level (mg/dL)", min_value=0, value=100, step=1)
 
+# Button to calculate risk
 if st.button("Calculate Risk"):
     input_data = [
         age, education, sex, is_smoking, cigsPerDay, BPMeds, prevalentStroke,
@@ -57,6 +67,8 @@ if st.button("Calculate Risk"):
     ]
     best_model_name, best_model, risk_score = select_best_model(input_data)
     recommendation = generate_recommendations(risk_score)
+    
+    # Display results
     st.subheader("Best Model:")
     st.write(best_model_name)
     st.subheader("Risk Score:")
@@ -64,4 +76,5 @@ if st.button("Calculate Risk"):
     st.subheader("Personalized Recommendation:")
     st.write(recommendation)
 
+# Footer
 st.write("Note: This prediction is not a substitute for professional medical advice.")
